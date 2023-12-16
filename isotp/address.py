@@ -65,7 +65,15 @@ class Address:
     :type address_extension: int or None
     """
 
-    def __init__(self, addressing_mode=AddressingMode.Normal_11bits, txid=None, rxid=None, target_address=None, source_address=None, physical_id=None, functional_id=None, address_extension=None, **kwargs):
+    def __init__(self,
+                 addressing_mode=AddressingMode.Normal_11bits,
+                 txid=None,
+                 rxid=None,
+                 target_address=None,
+                 source_address=None,
+                 physical_id=None,
+                 functional_id=None,
+                 address_extension=None, **kwargs):
 
         self.addressing_mode = addressing_mode
         self.target_address = target_address
@@ -83,6 +91,12 @@ class Address:
         if self.addressing_mode == AddressingMode.Mixed_29bits:
             self.physical_id = 0x18CE0000 if physical_id is None else physical_id & 0x1FFF0000
             self.functional_id = 0x18CD0000 if functional_id is None else functional_id & 0x1FFF0000
+
+        if self.addressing_mode in [AddressingMode.Normal_11bits, AddressingMode.Extended_11bits]:
+            self.functional_id = functional_id
+
+        if self.addressing_mode == AddressingMode.Mixed_11bits:
+            self.physical_id = physical_id
 
         self.validate()
 
@@ -194,11 +208,11 @@ class Address:
 
     def _get_tx_arbitraton_id(self, address_type):
         if self.addressing_mode == AddressingMode.Normal_11bits:
-            return self.txid
+            return self.txid if address_type == TargetAddressType.Physical else self.functional_id
         elif self.addressing_mode == AddressingMode.Normal_29bits:
             return self.txid
         elif self.addressing_mode == AddressingMode.Extended_11bits:
-            return self.txid
+            return self.txid if address_type == TargetAddressType.Physical else self.functional_id
         elif self.addressing_mode == AddressingMode.Extended_29bits:
             return self.txid
         elif self.addressing_mode == AddressingMode.Mixed_11bits:

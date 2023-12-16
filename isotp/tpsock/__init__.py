@@ -184,7 +184,7 @@ class socket:
         return v
 
     def __delete__(self):
-        if isinstance(_socket, socket_module.socket):
+        if isinstance(self._socket, socket_module.socket):
             self._socket.close()
             self._socket = None
 

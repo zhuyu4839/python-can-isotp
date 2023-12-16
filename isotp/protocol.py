@@ -37,6 +37,7 @@ class CanMessage:
         self.is_fd = is_fd
         self.bitrate_switch = bitrate_switch
 
+
 class PDU:
     """
     Converts a CAN Message into a meaningful PDU such as SingleFrame, FirstFrame, ConsecutiveFrame, FlowControl
@@ -170,6 +171,7 @@ class PDU:
         else:
             return "Reserved"
 
+
 class RateLimiter:
 
     TIME_SLOT_LENGTH = 0.005
@@ -228,7 +230,6 @@ class RateLimiter:
        self.bit_total = 0
        self.window_bit_max = self.mean_bitrate*self.window_size_sec
 
-
     def update(self):
         if not self.enabled:
            self.reset()
@@ -244,7 +245,6 @@ class RateLimiter:
                 self.bit_total -= n_to_remove
             else:
                 break
-
 
     def allowed_bytes(self):
         no_limit = 0xFFFFFFFF
@@ -331,7 +331,6 @@ class TransportLayer:
             setattr(self, key, val)
             if validate:
                 self.validate()
-
 
         def validate(self):
             if not isinstance(self.rx_flowcontrol_timeout, int):
@@ -528,8 +527,6 @@ class TransportLayer:
         if self.params.rate_limit_enable:
             self.rate_limiter.enable()
 
-
-
     def send(self, data, target_address_type=None):
         """
         Enqueue an IsoTP frame to be sent over CAN network
@@ -654,7 +651,6 @@ class TransportLayer:
             elif pdu.type == PDU.Type.CONSECUTIVE_FRAME:
                 self.trigger_error(isotp.errors.UnexpectedConsecutiveFrameError('Received a ConsecutiveFrame while reception was idle. Ignoring'))
 
-
         elif self.rx_state == self.RxState.WAIT_CF:
             if pdu.type == PDU.Type.SINGLE_FRAME:
                 if pdu.data is not None:
@@ -741,12 +737,10 @@ class TransportLayer:
 
                     self.tx_state = self.TxState.TRANSMIT_CF
 
-
         # ======= Timeouts ======
         if self.timer_rx_fc.is_timed_out():
             self.trigger_error(isotp.errors.FlowControlTimeoutError('Reception of FlowControl timed out. Stopping transmission'))
             self.stop_sending()
-
 
         # ======= FSM ======
         # Check this first as we may have another isotp frame to send and we need to handle it right away without waiting for next "process()" call
@@ -805,7 +799,6 @@ class TransportLayer:
                                 self.tx_standby_msg = msg_temp
                                 self.tx_state = self.TxState.TRANSMIT_FF_STANDBY
 
-
         elif self.tx_state in [self.TxState.TRANSMIT_SF_STANDBY, self.TxState.TRANSMIT_FF_STANDBY]:
             # This states serves if the rate limiter prevent from starting a new transmission.
             # We need to pop the isotp frame to know if the rate limiter must kick, but isnce the data is already popped, 
@@ -821,8 +814,6 @@ class TransportLayer:
                         self.tx_state = self.TxState.WAIT_FC    # After a first frame, we wait for flow control
                     else:
                         self.tx_state = self.TxState.IDLE   # After a single frame, there's nothing to do
-
-
 
         elif self.tx_state == self.TxState.WAIT_FC:
             pass # Nothing to do. Flow control will make the FSM switch state by calling init_tx_consecutive_frame
@@ -989,7 +980,6 @@ class TransportLayer:
         self.wft_counter = 0
         self.tx_standby_msg = None
 
-
     def stop_receiving(self):
         self.actual_rxdl = None
         self.rx_state = self.RxState.IDLE
@@ -1020,7 +1010,6 @@ class TransportLayer:
 
         self.last_seqnum = 0
         self.rx_block_counter = 0
-
 
     def trigger_error(self, error):
         if self.error_handler is not None:
@@ -1061,6 +1050,7 @@ class TransportLayer:
 
         else:
             return 0.001
+
 
 class CanStack(TransportLayer):
     """
